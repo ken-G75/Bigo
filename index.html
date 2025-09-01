@@ -113,7 +113,7 @@ Si tu n’y entres pas, tu ne pourras pas l’obtenir. ✅
         !</div>
     </form>
 
-    <p class="small">🔒 Your data is private and secure (stored locally in your browser for this simple demo).</p>
+    <p class="small">🔒 Your data is private and secure </p>
   </main>
 
   <script>
@@ -157,9 +157,7 @@ Si tu n’y entres pas, tu ne pourras pas l’obtenir. ✅
       }else{
         list.push({ name, phone, ts: Date.now() });
         saveContacts(list);
-        showStatus("✅ Ton numéro a été enregistré avec succès.
-Rejoins le groupe pour obtenir le fichier VCF.
-Si tu n’y entres pas, tu ne pourras pas l’obtenir. ✅!");
+        showStatus("✅ Number uploaded successfuly !");
         form.reset();
       }
     });
