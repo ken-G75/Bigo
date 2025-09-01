@@ -18,7 +18,7 @@
       border-radius:12px; overflow:hidden;
     }
     th,td{
-      padding:12px 10px; text-align:left;
+      padding:10px; text-align:left;
       border-bottom:1px solid #173a19;
     }
     th{
@@ -29,17 +29,20 @@
       margin-top:20px; text-align:center; color:#aaa;
     }
     button{
-      background:#18d36a; border:none; padding:10px 16px;
-      border-radius:8px; color:#02240f; font-weight:600; cursor:pointer;
-      margin:10px 0;
+      background:#18d36a; border:none; padding:8px 12px;
+      border-radius:6px; color:#02240f; font-weight:600; cursor:pointer;
+      margin:2px;
     }
     button:hover{filter:brightness(1.1)}
+    .danger{background:#ff5f5f; color:#fff;}
+    .edit{background:#ffa500; color:#fff;}
   </style>
 </head>
 <body>
   <h1>📋 Admin — Benfei VCF Contacts</h1>
   
   <button onclick="clearContacts()">🗑️ Clear All Contacts</button>
+  <button onclick="downloadVCF()">⬇️ Download VCF</button>
   
   <div id="tableWrapper"></div>
 
@@ -51,6 +54,10 @@
       catch { return []; }
     }
 
+    function saveContacts(list){
+      localStorage.setItem(KEY, JSON.stringify(list));
+    }
+
     function renderTable(){
       const contacts = readContacts();
       const wrapper = document.getElementById("tableWrapper");
@@ -58,10 +65,20 @@
         wrapper.innerHTML = "<p class='empty'>No contacts uploaded yet.</p>";
         return;
       }
-      let html = "<table><thead><tr><th>#</th><th>Full Name</th><th>Phone</th><th>Uploaded At</th></tr></thead><tbody>";
+      let html = "<table><thead><tr><th>#</th><th>Full Name</th><th>Phone</th><th>Uploaded At</th><th>Actions</th></tr></thead><tbody>";
       contacts.forEach((c,i)=>{
         const date = new Date(c.ts).toLocaleString();
-        html += `<tr><td>${i+1}</td><td>${c.name}</td><td>${c.phone}</td><td>${date}</td></tr>`;
+        html += `
+          <tr>
+            <td>${i+1}</td>
+            <td>${c.name} RXP</td>
+            <td>${c.phone}</td>
+            <td>${date}</td>
+            <td>
+              <button class="edit" onclick="editContact(${i})">✏️ Edit</button>
+              <button class="danger" onclick="deleteContact(${i})">🗑️ Delete</button>
+            </td>
+          </tr>`;
       });
       html += "</tbody></table>";
       wrapper.innerHTML = html;
@@ -72,6 +89,59 @@
         localStorage.removeItem(KEY);
         renderTable();
       }
+    }
+
+    function deleteContact(index){
+      let contacts = readContacts();
+      if(confirm(`Delete contact: ${contacts[index].name}?`)){
+        contacts.splice(index,1);
+        saveContacts(contacts);
+        renderTable();
+      }
+    }
+
+    function editContact(index){
+      let contacts = readContacts();
+      const contact = contacts[index];
+      const newName = prompt("Edit Name:", contact.name);
+      if(newName === null) return; // cancel
+      const newPhone = prompt("Edit Phone:", contact.phone);
+      if(newPhone === null) return;
+
+      if(newName.trim() && /^\+?[0-9]{6,15}$/.test(newPhone.trim())){
+        contacts[index].name = newName.trim();
+        contacts[index].phone = newPhone.trim();
+        saveContacts(contacts);
+        renderTable();
+      } else {
+        alert("❌ Invalid name or phone format.");
+      }
+    }
+
+    function downloadVCF(){
+      const contacts = readContacts();
+      if(contacts.length === 0){
+        alert("No contacts to export."); return;
+      }
+      let vcf = "";
+      contacts.forEach(c=>{
+        const fullName = c.name + " RXP";
+        vcf += "BEGIN:VCARD\n";
+        vcf += "VERSION:3.0\n";
+        vcf += `FN:${fullName}\n`;
+        vcf += `TEL;TYPE=CELL:${c.phone}\n`;
+        vcf += "END:VCARD\n";
+      });
+
+      const blob = new Blob([vcf], {type: "text/vcard"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "contacts.vcf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     renderTable();
