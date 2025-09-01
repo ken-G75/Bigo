@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Benfei VCF — Admin Page</title>
+  <style>
+    body{
+      margin:0; font-family:system-ui,Arial,sans-serif;
+      background:#0a0f0a; color:#e7ffe7; padding:20px;
+    }
+    h1{
+      color:#39ff14; text-align:center; margin-bottom:20px;
+    }
+    table{
+      width:100%; border-collapse:collapse; margin-top:20px;
+      background:#0f1610; border:1px solid #173a19;
+      border-radius:12px; overflow:hidden;
+    }
+    th,td{
+      padding:12px 10px; text-align:left;
+      border-bottom:1px solid #173a19;
+    }
+    th{
+      background:#173a19; color:#b6ffb6;
+    }
+    tr:hover{background:#112011}
+    .empty{
+      margin-top:20px; text-align:center; color:#aaa;
+    }
+    button{
+      background:#18d36a; border:none; padding:10px 16px;
+      border-radius:8px; color:#02240f; font-weight:600; cursor:pointer;
+      margin:10px 0;
+    }
+    button:hover{filter:brightness(1.1)}
+  </style>
+</head>
+<body>
+  <h1>📋 Admin — Benfei VCF Contacts</h1>
+  
+  <button onclick="clearContacts()">🗑️ Clear All Contacts</button>
+  
+  <div id="tableWrapper"></div>
+
+  <script>
+    const KEY = "benfei_contacts";
+
+    function readContacts(){
+      try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function renderTable(){
+      const contacts = readContacts();
+      const wrapper = document.getElementById("tableWrapper");
+      if(contacts.length === 0){
+        wrapper.innerHTML = "<p class='empty'>No contacts uploaded yet.</p>";
+        return;
+      }
+      let html = "<table><thead><tr><th>#</th><th>Full Name</th><th>Phone</th><th>Uploaded At</th></tr></thead><tbody>";
+      contacts.forEach((c,i)=>{
+        const date = new Date(c.ts).toLocaleString();
+        html += `<tr><td>${i+1}</td><td>${c.name}</td><td>${c.phone}</td><td>${date}</td></tr>`;
+      });
+      html += "</tbody></table>";
+      wrapper.innerHTML = html;
+    }
+
+    function clearContacts(){
+      if(confirm("Are you sure you want to delete all contacts?")){
+        localStorage.removeItem(KEY);
+        renderTable();
+      }
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>
